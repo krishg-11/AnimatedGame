@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Animated Game</string>
+    <string name="welcome">Welcome to my fun app!</string>
 </resources>
