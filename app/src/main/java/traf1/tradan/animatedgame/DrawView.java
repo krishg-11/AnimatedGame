@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 public class DrawView extends View {
     Paint paint=new Paint();
+    int y=0,dY=1;//set initial y position and vertical speed
 
     public DrawView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -23,6 +24,8 @@ public class DrawView extends View {
         canvas.drawRect(getLeft(),0,getRight(),getBottom(),paint);//paint background gray
         paint.setColor(Color.RED);//set paint to red
         //draw red circle
-        canvas.drawCircle(getWidth()*.5f,getHeight()*.2f,getWidth()*.3f,paint);
+        canvas.drawCircle(getWidth()*.5f,y,getWidth()*.3f,paint);
+        y+=dY;//increment y position
+        invalidate();  //redraws screen, invokes onDraw()
     }
 }
