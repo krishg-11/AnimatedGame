@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         leftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                System.out.println("pressed button");
+                DrawView.startOver();
             }
         });
     }

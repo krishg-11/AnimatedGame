@@ -16,11 +16,12 @@ import androidx.annotation.Nullable;
 
 public class DrawView extends View {
     Paint paint=new Paint();
-    int circPosY=400,dY=25;//set initial y position and vertical speed
-    int circPosX=400, dX=20;
-    int rectPosX=600, rectSizeX=200;
-    int rectPosY=getHeight(), rectSizeY=25;
-    int r = 40;
+    static int circPosY=400,dY=25;//set initial y position and vertical speed
+    static int circPosX=400, dX=20;
+    static int rectPosX=600, rectSizeX=200;
+    static int rectPosY=0, rectSizeY=25;
+    static int r = 40;
+    static int score = 0;
     RectF paddle;
     RectF ball;
 
@@ -36,32 +37,46 @@ public class DrawView extends View {
         canvas.drawRect(getLeft(),0,getRight(),getBottom(),paint);//paint background gray
 
         paint.setColor(Color.RED);//set paint to red
+
+        //Draw Paddle
         rectPosY = getHeight();
         paddle = new RectF(rectPosX-rectSizeX, rectPosY-rectSizeY, rectPosX+rectSizeX, rectPosY+rectSizeY);
         canvas.drawRect(paddle, paint);
-        //draw red circle
 
+        //draw ball
         ball = new RectF(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
 
-        if(paddle.intersect(ball)){
-            dY = -dY;
+        if(paddle.intersect(ball) && dY!=0){
+            dY = -dY-2;
+            score += 1;
         }
 
         canvas.drawRoundRect(ball, r, r, paint);
         circPosY+=dY;//increment y position
         circPosX+=dX;
-        if(circPosY+r >= getHeight()){
-            dY = 0;
-            dX = 0;
-            //GAME OVER
+        if(circPosY+r > getHeight()){
+            if(circPosX>rectPosX-rectSizeX && circPosX<rectPosX+rectSizeX && dY!=0){
+                dY = -dY-2;
+                score += 1;
+            }
+            else {
+                dY = 0;
+                dX = 0;
+
+                canvas.drawText("GAME OVER", getWidth() / 2, getHeight() / 2, paint);
+                //GAME OVER
+            }
         }
         if(circPosY-r<0){
-            dY = -dY;
+            dY = -dY+2;
         }
         if(circPosX+r >= getWidth() || circPosX-r<0){
             dX = -dX;
         }
 
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(80);
+        canvas.drawText("Score:" + score, getWidth()/2, 100, paint);
         invalidate();  //redraws screen, invokes onDraw()
     }
 
@@ -73,5 +88,13 @@ public class DrawView extends View {
 
         invalidate();
         return true;
+    }
+
+    public static void startOver() {
+        circPosY=400; dY=25; //set initial y position and vertical speed
+        circPosX=400; dX=20;
+        rectPosX=600; rectSizeX=200;
+        r = 40;
+        score = 0;
     }
 }
