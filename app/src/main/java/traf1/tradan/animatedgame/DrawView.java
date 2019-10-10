@@ -16,12 +16,13 @@ import androidx.annotation.Nullable;
 
 public class DrawView extends View {
     Paint paint=new Paint();
-    static int circPosY=400,dY=25;//set initial y position and vertical speed
-    static int circPosX=400, dX=20;
+    static int circPosY=400, dY=0;//set initial y position and vertical speed
+    static int circPosX=400, dX=0;
     static int rectPosX=600, rectSizeX=200;
     static int rectPosY=0, rectSizeY=25;
     static int r = 40;
     static int score = 0;
+    int ballColor = Color.rgb(255,0,0);
     RectF paddle;
     RectF ball;
 
@@ -33,7 +34,7 @@ public class DrawView extends View {
     protected void onDraw(Canvas canvas) {
 
         super.onDraw(canvas);
-        paint.setColor(Color.parseColor("#CCCCCC"));//set paint to gray
+        paint.setColor(Color.parseColor("#444444"));//set paint to gray
         canvas.drawRect(getLeft(),0,getRight(),getBottom(),paint);//paint background gray
 
         paint.setColor(Color.RED);//set paint to red
@@ -44,19 +45,22 @@ public class DrawView extends View {
         canvas.drawRect(paddle, paint);
 
         //draw ball
+        paint.setColor(ballColor);
         ball = new RectF(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
 
         if(paddle.intersect(ball) && dY!=0){
-            dY = -dY-2;
+            dY = -dY;
             score += 1;
+            ballColor = Color.rgb((float)Math.random()*128+128,(float)Math.random()*128+128,(float)Math.random()*128+128);
         }
 
         canvas.drawRoundRect(ball, r, r, paint);
+        paint.setColor(Color.WHITE);
         circPosY+=dY;//increment y position
         circPosX+=dX;
         if(circPosY+r > getHeight()){
             if(circPosX>rectPosX-rectSizeX && circPosX<rectPosX+rectSizeX && dY!=0){
-                dY = -dY-2;
+                dY = -dY;
                 score += 1;
             }
             else {
@@ -68,7 +72,7 @@ public class DrawView extends View {
             }
         }
         if(circPosY-r<0){
-            dY = -dY+2;
+            dY = -dY;
         }
         if(circPosX+r >= getWidth() || circPosX-r<0){
             dX = -dX;
@@ -76,7 +80,7 @@ public class DrawView extends View {
 
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(80);
-        canvas.drawText("Score:" + score, getWidth()/2, 100, paint);
+        canvas.drawText("Score: " + score, getWidth()/2, 100, paint);
         invalidate();  //redraws screen, invokes onDraw()
     }
 
