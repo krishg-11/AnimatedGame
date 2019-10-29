@@ -109,18 +109,39 @@ public class DrawView extends View {
             Brick brick = bricks.get(i);
             canvas.drawRect(brick, paint);
             if(brick.intersect(ball)){
-                if(circPosY < brick.bottom && circPosY > brick.top){
-                    dX = -dX;
+                float wy = (brickWidth + r) * ((brick.top + brick.bottom)/2 - circPosY);
+                float hx = (brickHeight + r) * ((brick.left + brick.right)/2 - circPosX);
+
+                if (wy > hx) {
+                    if (wy > -hx){
+                        /* top */
+                        dY = -dY;
+//                        circPosY = (int)brick.top - r;
+//                        ball.set(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+                        System.out.println("Top");
+                    }
+                    else{
+                        /* right */
+                        dX = -dX;
+//                        circPosX = (int)brick.right + r;
+//                        ball.set(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+                        System.out.println("Right");
+                    }
                 }
-                else if(dY>0){
-                    ball.set(ball.left, brick.top-20-2*r, ball.right, brick.top-20);
-                    dY = -dY;
-                    System.out.println("hit top");
-                }
-                else{
-                    ball.set(ball.left, brick.bottom + 50, ball.right, brick.bottom+ (2*r) + 50);
-                    dY = -dY;
-                    System.out.println("hit bottom");
+                else {
+                    if (wy > -hx) {
+                        /* left */
+                        dX = -dX;
+//                        circPosX = (int)brick.left - r;
+//                        ball.set(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+                        System.out.println("Left");
+                    } else {
+                        dY = -dY;
+//                        circPosY = (int)brick.bottom + r;
+//                        ball.set(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+                        System.out.println("Bottom");
+                        /* bottom */
+                    }
                 }
                 brick.gotHit();
                 if(brick.hits <= 0){
@@ -130,6 +151,12 @@ public class DrawView extends View {
             }
         }
 
+        if(bricks.size()==0){
+            dX = 0;
+            dY = 0;
+
+            canvas.drawText("YOU WON", getWidth() / 2, getHeight() / 2, paint);
+        }
 
         //Print score
         paint.setTextAlign(Paint.Align.CENTER);
