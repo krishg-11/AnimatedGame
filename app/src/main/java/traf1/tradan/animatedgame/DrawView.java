@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class DrawView extends View {
     Paint paint=new Paint();
-    static int circPosY=400, dY=0;//set initial y position and vertical speed
+    static int circPosY=800, dY=0;//set initial y position and vertical speed
     static int circPosX=400, dX=0;
     static int rectPosX=600, rectSizeX=200;
     static int rectPosY=0, rectSizeY=25;
@@ -38,13 +38,16 @@ public class DrawView extends View {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
-        paddle = new RectF(rectPosX-rectSizeX, rectPosY-rectSizeY, rectPosX+rectSizeX, rectPosY+rectSizeY);
-        ball = new RectF(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+
         brickWidth = getWidth()/5;
         brickHeight = getHeight()/10;
+
+        paddle = new RectF(rectPosX-rectSizeX, rectPosY-rectSizeY, rectPosX+rectSizeX, rectPosY+rectSizeY);
+        ball = new RectF(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+
         for(int r=0;r<4;r++){
             for(int c=0; c<5; c++){
-                bricks.add(new Brick(brickWidth*(float)c+5, brickHeight*(float)r+5, brickWidth*(float)(c+1)-5, brickHeight*(float)(r+1)-5, 2));
+                bricks.add(new Brick(brickWidth*(float)c+5, brickHeight*(float)r+5, brickWidth*(float)(c+1)-5, brickHeight*(float)(r+1)-5, 1));
             }
         }
     }
@@ -61,7 +64,7 @@ public class DrawView extends View {
         //Draw Paddle
         rectPosY = getHeight();
         paddle.set(rectPosX-rectSizeX, rectPosY-rectSizeY, rectPosX+rectSizeX, rectPosY+rectSizeY);
-        canvas.drawRect(paddle, paint);
+        canvas.drawRoundRect(paddle, 15, 15, paint);
 
         //Ball drawing and bouncing stuff
         paint.setColor(ballColor);
@@ -89,9 +92,15 @@ public class DrawView extends View {
         }
         if(circPosY-r<0){
             dY = -dY;
+            circPosY = r;
         }
-        if(circPosX+r >= getWidth() || circPosX-r<0){
+        if(circPosX+r >= getWidth()){
             dX = -dX;
+            circPosX = getWidth()-r;
+        }
+        if(circPosX-r<0){
+            dX = -dX;
+            circPosX = r;
         }
 
         //Draw bricks
@@ -100,11 +109,24 @@ public class DrawView extends View {
             Brick brick = bricks.get(i);
             canvas.drawRect(brick, paint);
             if(brick.intersect(ball)){
+                if(circPosY < brick.bottom && circPosY > brick.top){
+                    dX = -dX;
+                }
+                else if(dY>0){
+                    ball.set(ball.left, brick.top-20-2*r, ball.right, brick.top-20);
+                    dY = -dY;
+                    System.out.println("hit top");
+                }
+                else{
+                    ball.set(ball.left, brick.bottom + 50, ball.right, brick.bottom+ (2*r) + 50);
+                    dY = -dY;
+                    System.out.println("hit bottom");
+                }
                 brick.gotHit();
                 if(brick.hits <= 0){
                     bricks.remove(i);
+                    i--;
                 }
-                dY = -dY;
             }
         }
 
@@ -132,6 +154,13 @@ public class DrawView extends View {
         rectPosX=600; rectSizeX=200;
         r = 40;
         score = 0;
+
+        bricks.clear();
+        for(int r=0;r<4;r++){
+            for(int c=0; c<5; c++){
+                bricks.add(new Brick(brickWidth*(float)c+5, brickHeight*(float)r+5, brickWidth*(float)(c+1)-5, brickHeight*(float)(r+1)-5, 1));
+            }
+        }
     }
 
     public static void paddleBounce(){
