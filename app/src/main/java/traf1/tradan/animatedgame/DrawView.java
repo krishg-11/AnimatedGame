@@ -11,6 +11,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.os.Build;
 
 import androidx.annotation.Nullable;
 
@@ -30,9 +34,15 @@ public class DrawView extends View {
     static int brickHeight;
     RectF paddle;
     RectF ball;
+    private static final int MAX_STREAMS=100;
+
+    private int soundIdBackground;
+    private boolean soundPoolLoaded;
+    private SoundPool soundPool;
 
     public DrawView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        initSoundPool();//pre-load sounds
     }
 
     @Override
@@ -47,7 +57,7 @@ public class DrawView extends View {
 
         for(int r=0;r<4;r++){
             for(int c=0; c<5; c++){
-                bricks.add(new Brick(brickWidth*(float)c+5, brickHeight*(float)r+5, brickWidth*(float)(c+1)-5, brickHeight*(float)(r+1)-5, 1));
+                bricks.add(new Brick(brickWidth*(float)c+5, brickHeight*(float)r+5, brickWidth*(float)(c+1)-5, brickHeight*(float)(r+1)-5, 10));
             }
         }
     }
@@ -137,13 +147,16 @@ public class DrawView extends View {
                         System.out.println("Left");
                     } else {
                         dY = -dY;
-//                        circPosY = (int)brick.bottom + r;
-//                        ball.set(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
+                        circPosY = (int)brick.bottom + r;
+                        ball.set(circPosX-r, circPosY-r, circPosX+r, circPosY+r);
                         System.out.println("Bottom");
                         /* bottom */
                     }
                 }
+                System.out.println(brick.hits);
                 brick.gotHit();
+                playSoundBackground();
+
                 if(brick.hits <= 0){
                     bricks.remove(i);
                     i--;
@@ -195,5 +208,43 @@ public class DrawView extends View {
         dX = (circPosX - rectPosX)/8;
         score += 1;
         ballColor = Color.rgb((float)Math.random()*128+128,(float)Math.random()*128+128,(float)Math.random()*128+128);
+    }
+
+    private void initSoundPool()  {
+        // With Android API >= 21.
+        if (Build.VERSION.SDK_INT >= 21 ) {
+            AudioAttributes audioAttrib = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_GAME)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            SoundPool.Builder builder= new SoundPool.Builder();
+            builder.setAudioAttributes(audioAttrib).setMaxStreams(MAX_STREAMS);
+            this.soundPool = builder.build();
+        }
+        // With Android API < 21
+        else {
+            // SoundPool(int maxStreams, int streamType, int srcQuality)
+            this.soundPool = new SoundPool(MAX_STREAMS, AudioManager.STREAM_MUSIC, 0);
+        }
+        // When SoundPool load complete.
+        this.soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
+                soundPoolLoaded = true;
+                // Playing background sound.
+                playSoundBackground();
+            }
+        });
+        // Load the sound background.mp3 into SoundPool
+        soundIdBackground= soundPool.load(this.getContext(), R.raw.burp,1);
+    }
+    public void playSoundBackground()  {
+        if(soundPoolLoaded) {
+            float leftVolumn = 1.0f;
+            float rightVolumn =  1.0f;
+            // Play sound background.mp3
+            int streamId = this.soundPool.play(this.soundIdBackground,leftVolumn, rightVolumn, 1, 0, 1f);
+
+        }
     }
 }
